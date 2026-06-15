@@ -145,7 +145,7 @@ def ingest_excel():
         "maint_type": r["maint_type"],
     } for r in new_records]
 
-    EMBED_BATCH = 100
+    EMBED_BATCH = 500
     embeddings = []
     total_texts = len(texts)
     for start in range(0, total_texts, EMBED_BATCH):
