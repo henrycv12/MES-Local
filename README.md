@@ -1,64 +1,55 @@
 # MES Local — Maintenance Agent
 
-A fully local AI-powered troubleshooting assistant that learns from your work order history.
+**LG Electronics — TN Production Engineering Team**
+
+A fully local, offline AI assistant that answers maintenance questions from 7 years of GMES work order history. No cloud, no subscription, no data leaves the building.
 
 ## How it works
 
-1. Export work orders from your EMS/MES system as `.xlsx`
-2. Run `python ingest_excel.py` to index them into a local vector database
-3. Run `streamlit run app.py` to launch the chat interface
-4. Ask maintenance questions — the agent finds similar past repairs and explains what was done
+1. Export work orders from GMES as `.xlsx`
+2. Run `python ingest_excel.py` — indexes records into a local vector database (incremental, skips already-indexed)
+3. Run `streamlit run app.py` — launch the chat interface
+4. Ask questions — the agent retrieves similar past work orders and explains what was done
 
-## Stack
+## Quick start
 
-- **LLM:** [Ollama](https://ollama.com) (local, no cloud)
-- **Embeddings:** `nomic-embed-text` via Ollama
-- **Vector DB:** ChromaDB (local)
-- **UI:** Streamlit
-
-## Setup
-
-### 1. Install Ollama and pull models
 ```bash
+# 1. Pull Ollama models (one-time)
 ollama pull nomic-embed-text
-ollama pull llama3.2:3b
-```
+ollama pull llama3.2:1b
 
-### 2. Install Python dependencies
-```bash
+# 2. Install dependencies
 pip install -r requirements.txt
-```
 
-### 3. Add your work order Excel export
-Drop your `.xlsx` file in this folder. Expected columns:
-
-| Column | Description |
-|--------|-------------|
-| No | Work order number |
-| Maint. Plan Date | Date of maintenance |
-| Maint. Type | Corrective / Preventive / Breakdown / Daily |
-| Line / Group / ID | Equipment location and ID |
-| Equipment | Equipment name |
-| Maint. Title | Issue title |
-| Cause of failure(reason) | Root cause |
-| Resolution & Result | What was done to fix it |
-| Measures to Prevent Recurrence | Prevention notes |
-| Failure symptoms / Failure Cause / Action Info | Categorization |
-| Result Registrant | Technician |
-| Maint. Time (Min) / Stop Time (Min) | Duration and downtime |
-| Spare Parts | Parts used |
-
-### 4. Index the work orders
-```bash
+# 3. Drop your GMES .xlsx export in this folder, then:
 python ingest_excel.py
-```
 
-### 5. Launch the agent
-```bash
+# 4. Launch
 streamlit run app.py
 ```
 
-## Adding more data
+## Project structure
 
-- **New work order exports:** Drop updated `.xlsx` in the folder and re-run `ingest_excel.py`
-- **PDFs / manuals:** Use `ingest.py` to index additional PDF documents (optional)
+| File/Folder | Purpose |
+|---|---|
+| `app.py` | Streamlit chat UI — query, retrieve, answer |
+| `ingest_excel.py` | Excel ingestion — embed and store work orders |
+| `requirements.txt` | Python dependencies |
+| `CONTEXT.md` | Current project status — always up to date |
+| `AGENTS.md` | Architecture and module map |
+| `vault/` | Institutional memory: config, decisions, known issues |
+| `.windsurf/` | AI coding rules, skills, and workflow procedures |
+
+## Stack
+
+| Component | Tool |
+|---|---|
+| LLM | Ollama `llama3.2:1b` (local CPU) |
+| Embeddings | `nomic-embed-text` via Ollama batch API |
+| Vector DB | ChromaDB (local persistent) |
+| UI | Streamlit |
+| Data source | GMES Excel export (`.xlsx`) |
+
+## Maintained by
+
+TN PE Team — henrycv12
