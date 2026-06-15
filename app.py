@@ -1,8 +1,11 @@
 import asyncio
+import os
 import sys
 import streamlit as st
 import chromadb
-import ollama
+from dotenv import load_dotenv
+
+load_dotenv()
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -12,6 +15,22 @@ WO_COLLECTION = "work_orders"
 OLLAMA_MODEL = "llama3.2:1b"
 EMBED_MODEL = "nomic-embed-text"
 TOP_K = 6
+
+# --- Embedding provider (mirrors ingest_excel.py) ---
+AZURE_KEY      = os.getenv("AZURE_OPENAI_API_KEY", "")
+AZURE_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
+AZURE_DEPLOY   = os.getenv("AZURE_OPENAI_EMBED_DEPLOYMENT", "embed-model")
+USE_AZURE      = bool(AZURE_KEY and AZURE_ENDPOINT)
+
+if USE_AZURE:
+    from openai import AzureOpenAI
+    _azure_client = AzureOpenAI(
+        api_key=AZURE_KEY,
+        azure_endpoint=AZURE_ENDPOINT,
+        api_version="2024-12-01-preview",
+    )
+else:
+    import ollama
 
 RECENCY_KEYWORDS = {
     "recent", "latest", "last", "newest", "most recent",
@@ -40,12 +59,20 @@ def is_recency_query(query):
     return any(kw in q for kw in RECENCY_KEYWORDS)
 
 
+def embed_query(query):
+    if USE_AZURE:
+        resp = _azure_client.embeddings.create(model=AZURE_DEPLOY, input=[query])
+        return resp.data[0].embedding
+    else:
+        return ollama.embeddings(model=EMBED_MODEL, prompt=query)["embedding"]
+
+
 def retrieve_context(query, collection, top_k=TOP_K):
-    resp = ollama.embeddings(model=EMBED_MODEL, prompt=query)
+    embedding = embed_query(query)
     # Fetch more candidates when recency is needed so we can re-rank
     fetch_k = top_k * 3 if is_recency_query(query) else top_k
     results = collection.query(
-        query_embeddings=[resp["embedding"]],
+        query_embeddings=[embedding],
         n_results=fetch_k,
         include=["documents", "metadatas"],
     )

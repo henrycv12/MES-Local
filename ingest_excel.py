@@ -1,12 +1,30 @@
 import glob
+import os
 import pandas as pd
 import chromadb
-import ollama
+from dotenv import load_dotenv
+
+load_dotenv()
 
 EXCEL_FOLDER = "."           # scans all .xlsx files in this folder
 CHROMA_DIR = "./chroma_db"
-COLLECTION_NAME = "fike_manual"
-EMBED_MODEL = "nomic-embed-text"
+EMBED_MODEL_OLLAMA = "nomic-embed-text"
+
+# --- Auto-detect embedding provider from .env ---
+AZURE_KEY      = os.getenv("AZURE_OPENAI_API_KEY", "")
+AZURE_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
+AZURE_DEPLOY   = os.getenv("AZURE_OPENAI_EMBED_DEPLOYMENT", "embed-model")
+USE_AZURE      = bool(AZURE_KEY and AZURE_ENDPOINT)
+
+if USE_AZURE:
+    from openai import AzureOpenAI
+    _azure_client = AzureOpenAI(
+        api_key=AZURE_KEY,
+        azure_endpoint=AZURE_ENDPOINT,
+        api_version="2024-12-01-preview",
+    )
+else:
+    import ollama
 
 # --- Column mapping (exact names from your EMS export) ---
 COL_NO              = "No"
@@ -148,11 +166,22 @@ def ingest_excel():
     EMBED_BATCH = 500
     embeddings = []
     total_texts = len(texts)
+    provider = "Azure OpenAI" if USE_AZURE else "Ollama (local CPU)"
+    print(f"  Embedding provider: {provider}")
+
     for start in range(0, total_texts, EMBED_BATCH):
         end = min(start + EMBED_BATCH, total_texts)
-        batch_texts = [t[:1500] for t in texts[start:end]]
-        resp = ollama.embed(model=EMBED_MODEL, input=batch_texts)
-        embeddings.extend(resp.embeddings)
+        if USE_AZURE:
+            batch_texts = [t[:8000] for t in texts[start:end]]
+            resp = _azure_client.embeddings.create(
+                model=AZURE_DEPLOY,
+                input=batch_texts,
+            )
+            embeddings.extend([d.embedding for d in resp.data])
+        else:
+            batch_texts = [t[:1500] for t in texts[start:end]]
+            resp = ollama.embed(model=EMBED_MODEL_OLLAMA, input=batch_texts)
+            embeddings.extend(resp.embeddings)
         print(f"  Embedded {end}/{total_texts}...")
 
     BATCH_SIZE = 500
