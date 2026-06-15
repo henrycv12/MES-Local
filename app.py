@@ -15,7 +15,7 @@ CHROMA_DIR = "./chroma_db"
 WO_COLLECTION = "work_orders"
 OLLAMA_MODEL = "llama3.2:1b"
 EMBED_MODEL = "nomic-embed-text"
-TOP_K = 6
+TOP_K = 15
 
 # --- Azure OpenAI (embeddings + LLM) ---
 AZURE_KEY        = os.getenv("AZURE_OPENAI_API_KEY", "")
@@ -187,7 +187,7 @@ with st.sidebar:
             help="Must be pulled via: ollama pull <model>",
         )
         st.caption("🟡 Ollama fallback (no .env found)")
-    top_k = st.slider("Similar work orders (Top K)", min_value=3, max_value=15, value=6)
+    top_k = st.slider("Similar work orders (Top K)", min_value=3, max_value=30, value=15)
     st.divider()
     st.header("📂 Knowledge Base")
     st.caption("Add work orders by dropping your Excel/CSV export in this folder and running:")
