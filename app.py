@@ -112,6 +112,11 @@ def retrieve_context(query, collection, top_k=TOP_K):
             "source": m.get("source", ""),
             "date_ts": m.get("date_ts", 0),
             "date": m.get("date", "?"),
+            "wo_no": m.get("wo_no", "?"),
+            "equipment": m.get("equipment", "?"),
+            "maint_type": m.get("maint_type", "?"),
+            "line": m.get("line", "?"),
+            "group": m.get("group", "?"),
         }
         for doc, m in zip(docs, metas)
     ]
@@ -127,6 +132,22 @@ SYSTEM_BASE = (
     "suggest likely causes based on historical patterns, give step-by-step guidance based on what has worked before. "
     "If no relevant history exists, clearly say so."
 )
+
+
+def render_wo_cards(items):
+    for i, item in enumerate(items):
+        with st.container():
+            cols = st.columns([1, 3])
+            with cols[0]:
+                st.markdown(f"### WO #{item['wo_no']}")
+                st.caption(item['date'])
+                st.markdown(f"**{item['maint_type']}**")
+            with cols[1]:
+                st.markdown(f"🔧 **Equipment:** {item['equipment']}")
+                st.markdown(f"🏭 **Line:** {item['line']} &nbsp;|&nbsp; **Group:** {item['group']}")
+                st.markdown(item['text'][:400] + ("..." if len(item['text']) > 400 else ""))
+            if i < len(items) - 1:
+                st.divider()
 
 
 def build_messages(query, items, history):
@@ -219,9 +240,8 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
         if msg["role"] == "assistant" and msg.get("items"):
-            with st.expander("� Work orders referenced"):
-                for item in msg["items"]:
-                    st.markdown(f"**{item['ref']}**\n\n{item['text'][:350]}...")
+            with st.expander(f"📋 {len(msg['items'])} work orders referenced"):
+                render_wo_cards(msg["items"])
 
 # --- Chat input ---
 if db_ready:
@@ -253,9 +273,8 @@ if db_ready:
                     )
                 st.markdown(full_response)
 
-            with st.expander("� Work orders referenced"):
-                for item in items:
-                    st.markdown(f"**{item['ref']}**\n\n{item['text'][:350]}...")
+            with st.expander(f"📋 {len(items)} work orders referenced"):
+                render_wo_cards(items)
 
         st.session_state.messages.append(
             {"role": "assistant", "content": full_response, "items": items}
