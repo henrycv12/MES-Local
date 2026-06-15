@@ -9,9 +9,14 @@ if sys.platform == "win32":
 
 CHROMA_DIR = "./chroma_db"
 WO_COLLECTION = "work_orders"
-OLLAMA_MODEL = "llama3.2:3b"
+OLLAMA_MODEL = "llama3.2:1b"
 EMBED_MODEL = "nomic-embed-text"
 TOP_K = 6
+
+RECENCY_KEYWORDS = {
+    "recent", "latest", "last", "newest", "most recent",
+    "this week", "this month", "today", "yesterday", "just", "ago",
+}
 
 st.set_page_config(
     page_title="MES Local — Maintenance Agent",
@@ -30,11 +35,18 @@ def load_collection():
     return client.get_collection(WO_COLLECTION)
 
 
+def is_recency_query(query):
+    q = query.lower()
+    return any(kw in q for kw in RECENCY_KEYWORDS)
+
+
 def retrieve_context(query, collection, top_k=TOP_K):
     resp = ollama.embeddings(model=EMBED_MODEL, prompt=query)
+    # Fetch more candidates when recency is needed so we can re-rank
+    fetch_k = top_k * 3 if is_recency_query(query) else top_k
     results = collection.query(
         query_embeddings=[resp["embedding"]],
-        n_results=top_k,
+        n_results=fetch_k,
         include=["documents", "metadatas"],
     )
     docs = results["documents"][0]
@@ -44,9 +56,13 @@ def retrieve_context(query, collection, top_k=TOP_K):
             "text": doc,
             "ref": f"WO #{m.get('wo_no','?')} | {m.get('equipment','?')} | {m.get('date','?')} | {m.get('maint_type','?')}",
             "source": m.get("source", ""),
+            "date_ts": m.get("date_ts", 0),
+            "date": m.get("date", "?"),
         }
         for doc, m in zip(docs, metas)
     ]
+    if is_recency_query(query):
+        items = sorted(items, key=lambda x: x["date_ts"], reverse=True)[:top_k]
     return items
 
 
@@ -86,7 +102,7 @@ with st.sidebar:
     st.header("⚙️ Settings")
     model_choice = st.selectbox(
         "Ollama Model",
-        ["llama3.2:3b", "llama3.2:1b", "llama3", "mistral", "phi3:mini"],
+        ["llama3.2:1b", "llama3.2:3b", "llama3", "mistral", "phi3:mini"],
         index=0,
         help="Must be pulled via: ollama pull <model>",
     )

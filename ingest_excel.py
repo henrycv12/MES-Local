@@ -75,17 +75,27 @@ def ingest_excel():
         df.columns = df.columns.str.strip()
         print(f"  Found {len(df)} rows, {len(df.columns)} columns")
 
+        # Sort newest-first so recent WOs are represented first
+        df[COL_DATE] = pd.to_datetime(df[COL_DATE], errors="coerce")
+        df = df.sort_values(COL_DATE, ascending=False).reset_index(drop=True)
+
         for idx, row in df.iterrows():
             text = row_to_text(row)
             wo_no = safe(row, COL_NO, str(idx))
+            date_val = row.get(COL_DATE)
+            date_str = str(date_val.date()) if pd.notna(date_val) else "—"
+            date_ts = int(date_val.timestamp()) if pd.notna(date_val) else 0
             all_records.append({
                 "text": text,
                 "source": filename,
                 "chunk_id": f"WO_{filename}_{wo_no}_{idx}",
                 "wo_no": wo_no,
-                "date": safe(row, COL_DATE),
+                "date": date_str,
+                "date_ts": date_ts,
                 "equipment": safe(row, COL_EQUIP),
                 "equip_id": safe(row, COL_EQUIP_ID),
+                "line": safe(row, COL_LINE),
+                "group": safe(row, COL_GROUP),
                 "maint_type": safe(row, COL_TYPE),
             })
 
@@ -115,8 +125,11 @@ def ingest_excel():
         "source":     r["source"],
         "wo_no":      r["wo_no"],
         "date":       r["date"],
+        "date_ts":    r["date_ts"],
         "equipment":  r["equipment"],
         "equip_id":   r["equip_id"],
+        "line":       r["line"],
+        "group":      r["group"],
         "maint_type": r["maint_type"],
     } for r in all_records]
 
