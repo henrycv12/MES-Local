@@ -2,6 +2,7 @@ import glob
 import pandas as pd
 import chromadb
 import ollama
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 EXCEL_FOLDER = "."           # scans all .xlsx files in this folder
 CHROMA_DIR = "./chroma_db"
@@ -119,21 +120,38 @@ def ingest_excel():
         "maint_type": r["maint_type"],
     } for r in all_records]
 
-    embeddings = []
-    for i, text in enumerate(texts):
+    WORKERS = 6
+    print(f"  Using {WORKERS} parallel workers...")
+    embeddings = [None] * len(texts)
+
+    def embed_one(args):
+        idx, text = args
         resp = ollama.embeddings(model=EMBED_MODEL, prompt=text[:1500])
-        embeddings.append(resp["embedding"])
-        if (i + 1) % 100 == 0:
-            print(f"  Embedded {i + 1}/{len(texts)}...")
+        return idx, resp["embedding"]
 
-    collection.add(
-        documents=texts,
-        embeddings=embeddings,
-        ids=ids,
-        metadatas=metadatas,
-    )
+    completed = 0
+    with ThreadPoolExecutor(max_workers=WORKERS) as executor:
+        futures = {executor.submit(embed_one, (i, t)): i for i, t in enumerate(texts)}
+        for future in as_completed(futures):
+            idx, emb = future.result()
+            embeddings[idx] = emb
+            completed += 1
+            if completed % 500 == 0:
+                print(f"  Embedded {completed}/{len(texts)}...")
 
-    print(f"\n✅ Work order ingestion complete — {len(all_records)} records stored.")
+    BATCH_SIZE = 500
+    total = len(texts)
+    for start in range(0, total, BATCH_SIZE):
+        end = min(start + BATCH_SIZE, total)
+        collection.add(
+            documents=texts[start:end],
+            embeddings=embeddings[start:end],
+            ids=ids[start:end],
+            metadatas=metadatas[start:end],
+        )
+        print(f"  Stored {end}/{total} records...")
+
+    print(f"\n✅ Work order ingestion complete — {total} records stored.")
     print("   Restart 'streamlit run app.py' to use the updated knowledge base.")
 
 
