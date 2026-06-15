@@ -45,10 +45,10 @@ streamlit run app.py
 | Component | Tool |
 |---|---|
 | LLM | Ollama `llama3.2:1b` (local CPU) |
-| Embeddings | `nomic-embed-text` via Ollama batch API |
+| Embeddings | Azure OpenAI `text-embedding-3-small` (fast cloud) |
 | Vector DB | ChromaDB (local persistent) |
 | UI | Streamlit |
-| Data source | GMES Excel export (`.xlsx`) |
+| Data source | GMES export (`.xlsx` or `.csv`) |
 
 ## Maintained by
 

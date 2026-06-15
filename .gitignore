@@ -5,6 +5,7 @@ chroma_db/
 *.xlsx
 *.xls
 *.csv
+*.CSV
 *.pdf
 
 # Python
