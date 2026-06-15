@@ -8,8 +8,8 @@ description: Triggered when adding new features or functionality to the project
 3. Read `vault/decisions/` — understand why existing design choices were made
 
 ## Rules
-- Follow `.windsurf/rules/coding-style.md` (batch embed, COL_* constants, no streaming)
-- Follow `.windsurf/rules/structure.md` (where new files go)
+- Follow `.devin/rules/coding-style.md` (batch embed, COL_* constants, no streaming)
+- Follow `.devin/rules/structure.md` (where new files go)
 - Do not modify `ingest_excel.py` and `app.py` in the same commit unless tightly coupled
 - New features in `app.py` go after the `build_prompt()` function, before sidebar code
 
@@ -23,3 +23,4 @@ description: Triggered when adding new features or functionality to the project
 - Update `CONTEXT.md` — move feature from "Pending" to "Working"
 - Add decision rationale to `vault/decisions/` if a new design choice was made
 - Run `/commit` workflow before pushing
+

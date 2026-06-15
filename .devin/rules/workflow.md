@@ -21,3 +21,4 @@
 - Only re-ingest when: new Excel export with additional WOs, or column mapping changed
 - Incremental ingest is safe to run anytime — it skips already-indexed records
 - Full rebuild: delete `chroma_db/` then run `python ingest_excel.py`
+

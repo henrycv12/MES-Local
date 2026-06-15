@@ -38,7 +38,7 @@ streamlit run app.py
 | `CONTEXT.md` | Current project status — always up to date |
 | `AGENTS.md` | Architecture and module map |
 | `vault/` | Institutional memory: config, decisions, known issues |
-| `.windsurf/` | AI coding rules, skills, and workflow procedures |
+| `.devin/` | AI coding rules, skills, and workflow procedures |
 
 ## Stack
 
@@ -53,3 +53,4 @@ streamlit run app.py
 ## Maintained by
 
 TN PE Team — henrycv12
+

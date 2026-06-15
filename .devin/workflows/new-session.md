@@ -9,4 +9,5 @@ Run this at the start of every work session.
 3. Read `vault/known-issues/` — check for active bugs or workarounds
 4. Check `chroma_db/` exists — if not, remind user to run `python ingest_excel.py` first
 5. Ask the user: what are we working on today?
-6. Load the relevant skill from `.windsurf/skills/` based on the task type
+6. Load the relevant skill from `.devin/skills/` based on the task type
+

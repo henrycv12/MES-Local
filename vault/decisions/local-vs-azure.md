@@ -29,3 +29,4 @@ Replace the entire Azure stack with a fully local, offline equivalent.
 - No automatic nightly sync from GMES (manual Excel export required)
 - LLM quality lower than GPT-4 (mitigated by good retrieval + prompting)
 - Single-user local app vs multi-user Teams bot
+

@@ -19,3 +19,4 @@
 - Do not hardcode column names inside functions — always use `COL_*` constants
 - Do not use streaming Ollama calls on Windows — use `stream=False`
 - Do not commit `.xlsx`, `.pdf`, or `chroma_db/` — these are gitignored
+

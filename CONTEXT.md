@@ -29,3 +29,4 @@ MES Local is a fully offline AI maintenance assistant for LG Electronics TN Prod
 - Ollama `llama3.2:1b` response time ~15–25s; `3b` ~45–60s
 - ChromaDB `get()` with offset used to detect existing IDs — may be slow on very large collections
 - Windows asyncio ProactorEventLoop bug mitigated with `WindowsSelectorEventLoopPolicy`
+

@@ -36,3 +36,4 @@
 | `COL_SYMPTOMS` | `Failure symptoms` |
 | `COL_FAILURE_CAUSE` | `Failure Cause` |
 | `COL_ACTION` | `Action Info` |
+

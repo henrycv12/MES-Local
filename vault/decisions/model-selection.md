@@ -13,3 +13,4 @@
 - Incompatible with Python 3.13 (scipy dependency fails to build)
 - Would require separate model download outside Ollama
 - `nomic-embed-text` via Ollama is equivalent quality for this use case
+

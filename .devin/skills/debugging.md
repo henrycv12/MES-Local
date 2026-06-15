@@ -26,3 +26,4 @@ description: Triggered when diagnosing errors, unexpected behavior, or failed ru
 ## After fixing
 - Update `vault/known-issues/` — remove resolved issue or add new one
 - Update `CONTEXT.md` status if applicable
+

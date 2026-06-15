@@ -24,3 +24,4 @@
 - **Problem:** No automated nightly sync from GMES — engineer must manually export Excel
 - **Workaround:** Export when new WOs need to be added; incremental ingest skips existing records
 - **Future:** Automate export via GMES API if available
+

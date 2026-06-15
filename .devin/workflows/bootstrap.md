@@ -25,15 +25,16 @@ Document architecture, module responsibilities, data flow, external dependencies
 - `vault/known-issues/` — current bugs and workarounds
 - `vault/architecture/` — RAG pipeline diagram or description
 
-## STEP 5 — Fill .windsurf/rules/
+## STEP 5 — Fill .devin/rules/
 Update `coding-style.md`, `workflow.md`, `structure.md` based on conventions already in the codebase.
 
-## STEP 6 — Fill .windsurf/skills/
+## STEP 6 — Fill .devin/skills/
 Update each skill file so paths, module names, and pitfalls reflect this actual project.
 
 ## STEP 7 — Confirm
-Run: `find vault/ .windsurf/ -type f | sort`
+Run: `find vault/ .devin/ -type f | sort`
 
 Print a one-line summary of every file and its contents.
 
 **Do NOT commit.** The user will review first.
+

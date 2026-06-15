@@ -29,3 +29,4 @@ User types question in Streamlit
 - **ID format:** `WO_{filename}_{wo_no}_{row_idx}`
 - **Document:** Full formatted text of the work order
 - **Metadata fields:** `source`, `wo_no`, `date`, `date_ts`, `equipment`, `equip_id`, `line`, `group`, `maint_type`
+

@@ -22,3 +22,4 @@ description: Triggered when changing models, column mappings, or system constant
 - Changing `OLLAMA_MODEL` → no re-ingest needed, only affects answer quality/speed
 - Changing `TOP_K` → no re-ingest needed, only affects context window size
 - Changing `WO_COLLECTION` name → orphans existing DB, must re-ingest
+
