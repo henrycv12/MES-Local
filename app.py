@@ -21,7 +21,7 @@ TOP_K = 6
 AZURE_KEY        = os.getenv("AZURE_OPENAI_API_KEY", "")
 AZURE_ENDPOINT   = os.getenv("AZURE_OPENAI_ENDPOINT", "")
 AZURE_DEPLOY     = os.getenv("AZURE_OPENAI_EMBED_DEPLOYMENT", "embed-model")
-AZURE_LLM_DEPLOY = os.getenv("AZURE_OPENAI_LLM_DEPLOYMENT", "gpt-4o-mini")
+AZURE_LLM_DEPLOY = os.getenv("AZURE_OPENAI_LLM_DEPLOYMENT", "gpt-4o")
 USE_AZURE        = bool(AZURE_KEY and AZURE_ENDPOINT)
 
 if USE_AZURE:
@@ -140,7 +140,7 @@ with st.sidebar:
     if USE_AZURE:
         model_choice = st.selectbox(
             "Azure LLM Model",
-            ["gpt-4o-mini", "gpt-4o"],
+            ["gpt-4o", "gpt-4o-mini"],
             index=0,
             help="Azure OpenAI deployment name",
         )
