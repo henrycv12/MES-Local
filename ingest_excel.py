@@ -103,24 +103,37 @@ def ingest_excel():
         print("No records to ingest.")
         return
 
-    print(f"\nTotal work orders to embed: {len(all_records)}")
+    print(f"\nTotal work orders in file: {len(all_records)}")
 
-    # --- Connect to existing ChromaDB (keeps PDF data) ---
+    # --- Connect to existing ChromaDB ---
     client = chromadb.PersistentClient(path=CHROMA_DIR)
-
-    # Remove any old WO collection to avoid duplicates, keep fike_manual PDF data
     WO_COLLECTION = "work_orders"
+
     try:
-        client.delete_collection(WO_COLLECTION)
-        print("  Cleared existing work orders collection")
+        collection = client.get_collection(WO_COLLECTION)
+        existing_count = collection.count()
+        print(f"  Existing collection has {existing_count:,} records.")
+        # Get all existing IDs to skip duplicates
+        existing_ids = set()
+        batch = 1000
+        for offset in range(0, existing_count, batch):
+            res = collection.get(limit=batch, offset=offset, include=[])
+            existing_ids.update(res["ids"])
     except Exception:
-        pass
+        collection = client.create_collection(WO_COLLECTION)
+        existing_ids = set()
+        print("  Created new work orders collection.")
 
-    collection = client.create_collection(WO_COLLECTION)
+    new_records = [r for r in all_records if r["chunk_id"] not in existing_ids]
+    if not new_records:
+        print("\n✅ Nothing new to ingest — collection is already up to date.")
+        print(f"   {len(all_records):,} work orders already indexed.")
+        return
 
-    print(f"Embedding {len(all_records)} work orders (embedding model: {EMBED_MODEL})...")
-    texts     = [r["text"] for r in all_records]
-    ids       = [r["chunk_id"] for r in all_records]
+    print(f"  {len(existing_ids):,} already indexed. Embedding {len(new_records):,} new records...")
+
+    texts     = [r["text"] for r in new_records]
+    ids       = [r["chunk_id"] for r in new_records]
     metadatas = [{
         "source":     r["source"],
         "wo_no":      r["wo_no"],
@@ -131,7 +144,7 @@ def ingest_excel():
         "line":       r["line"],
         "group":      r["group"],
         "maint_type": r["maint_type"],
-    } for r in all_records]
+    } for r in new_records]
 
     WORKERS = 6
     print(f"  Using {WORKERS} parallel workers...")
@@ -164,7 +177,8 @@ def ingest_excel():
         )
         print(f"  Stored {end}/{total} records...")
 
-    print(f"\n✅ Work order ingestion complete — {total} records stored.")
+    total_now = len(existing_ids) + total
+    print(f"\n✅ Ingestion complete — {total} new records added ({total_now:,} total indexed).")
     print("   Restart 'streamlit run app.py' to use the updated knowledge base.")
 
 
