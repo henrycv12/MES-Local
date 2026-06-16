@@ -106,6 +106,10 @@
         "query_used": {
           "type": "string",
           "description": "The rewritten search query that was used"
+        },
+        "card": {
+          "type": "string",
+          "description": "Adaptive Card JSON string for cited work orders"
         }
       }
     }

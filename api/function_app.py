@@ -68,7 +68,12 @@ SYSTEM_BASE = (
     "NEVER ask the user to clarify or specify — use the conversation history to infer which machine, "
     "work order, or technician they mean. If the previous answer mentioned a specific work order, "
     "assume the follow-up question refers to that same work order. "
-    "If no relevant history exists, clearly say so."
+    "If no relevant history exists, clearly say so.\n"
+    "After your answer, always append a blank line followed by:\n"
+    "---\n"
+    "📋 **Cited Work Orders**\n"
+    "Then list each work order you actually used as: `• WO #[number] | [date] | [technician] | [equipment]`\n"
+    "Only list WOs that were genuinely relevant to the answer. Maximum 5 entries."
 )
 
 # --- Clients (initialized once per cold start) ---
@@ -182,6 +187,33 @@ def call_llm(messages: list) -> str:
 
 # ---------------------------------------------------------------------------
 # HTTP trigger: POST /api/query
+def build_card(items: list) -> str:
+    """Build an Adaptive Card JSON string from retrieved work order items."""
+    if not items:
+        return ""
+    facts = []
+    seen = set()
+    for i in items[:6]:
+        wo = i["wo_no"]
+        if wo in seen:
+            continue
+        seen.add(wo)
+        facts.append({
+            "title": f"WO #{wo} · {i['date']}",
+            "value": f"{i['equipment']} · {i['maint_type']} · {i['technician']}"
+        })
+    card = {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.5",
+        "body": [
+            {"type": "TextBlock", "text": "📋 Cited Work Orders",
+             "weight": "Bolder", "size": "Medium", "color": "Accent"},
+            {"type": "FactSet", "facts": facts},
+        ]
+    }
+    return json.dumps(card, ensure_ascii=False)
+
 # ---------------------------------------------------------------------------
 
 @app.route(route="query", methods=["POST"])
@@ -238,6 +270,7 @@ def query_handler(req: func.HttpRequest) -> func.HttpResponse:
             "answer":      answer,
             "work_orders": work_orders,
             "query_used":  search_query,
+            "card":        build_card(items),
         }
         return func.HttpResponse(
             json.dumps(payload, ensure_ascii=False),

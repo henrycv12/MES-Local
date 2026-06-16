@@ -94,6 +94,9 @@ Data Layer       → Azure SQL Database
 - [x] **Azure OpenAI LLM** (`gpt-4o`) — Jun 15 2026
 - [x] **Response time ≤5 sec** — achieved ~2–5 sec with GPT-4o — Jun 15 2026
 - [x] **19,000+ work orders indexed** (1 year of data from GMES) — Jun 15 2026
+- [x] **Multi-turn conversation history** — Copilot Studio agent with full context via Azure Table Storage — Jun 16 2026
+- [x] **Copilot Studio integration** — replaces "local Streamlit only" — Jun 16 2026
+- [x] **Work order citations** — inline citation block in every answer showing WO number, date, technician, equipment — Jun 16 2026
 
 ### 🟡 Pending
 - [ ] **Recurring failure analytics** — top-N failures by line/shop/date range (high value per DX KPIs)
