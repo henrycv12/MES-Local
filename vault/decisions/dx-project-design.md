@@ -87,6 +87,12 @@ Data Layer       → Azure SQL Database
 
 ---
 
+## IT Progress Tracking (W25)
+
+| NO | Team | Week | Project Title | Current Status | Target | Planned Progress | Actual Progress | Flag | Note/Issue |
+|---|---|---|---|---|---|---|---|---|---|
+| 6 | PE | W25 | Development of an AI-based Work Order Management and Analytics System | Development | Jun 26 | 80% | 70% | ● | Core RAG system complete (Azure OpenAI, AI Search, Copilot Studio, multi-turn history, citations). Pending: recurring failure analytics, automated nightly sync, Teams integration, output actions (Create PM Task, Export Summary). |
+
 ## Gap Analysis — What GMES Agent Still Needs
 
 ### ✅ Completed
