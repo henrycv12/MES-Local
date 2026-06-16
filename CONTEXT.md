@@ -1,10 +1,10 @@
 # Project Context
 
 ## What this project does
-MES Local is a fully offline AI maintenance assistant for LG Electronics TN Production Engineering. It indexes 7-year historical work order exports from GMES (EMS system) into a local vector database and answers natural-language troubleshooting questions from PE engineers — identifying past failures, root causes, and resolutions without any cloud dependency.
+GMES Agent is a fully offline AI maintenance assistant for LG Electronics TN Production Engineering. It indexes 7-year historical work order exports from GMES (EMS system) into a local vector database and answers natural-language troubleshooting questions from PE engineers — identifying past failures, root causes, and resolutions without any cloud dependency.
 
 ## Current status
-- **Working:** Work order ingestion from Excel/CSV (incremental), ChromaDB vector search, Streamlit chat UI, Azure OpenAI GPT-4o LLM answering, recency-aware retrieval, Azure OpenAI `text-embedding-3-small` batch embedding, ~2–5 sec response time
+- **Working:** Work order ingestion from Excel/CSV (incremental), ChromaDB vector search, Streamlit chat UI, Azure OpenAI GPT-4o LLM answering, recency-aware retrieval, Azure OpenAI `text-embedding-3-small` batch embedding, multi-turn query rewriting (resolves references like "same machine", "that issue"), ~2–5 sec response time
 - **In progress:** Response quality validation with PE team; recurring failure analytics
 - **Broken:** Nothing known
 - **Pending:** Export summary feature, PM checklist generator, recurring failures dashboard (top-N by line/shop/date range), Teams integration

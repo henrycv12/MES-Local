@@ -11,7 +11,7 @@
 - `./chroma_db/` — ChromaDB persistent storage (DO NOT edit manually, gitignored)
 - `./vault/` — institutional memory: decisions, config, known issues
 - `./.devin/rules/` — AI coding conventions for this project
-- `./.devin/skills/` — task-specific context loaded per session
+- `./.devin/skills/<name>/SKILL.md` — task-specific skills, each in its own subdirectory
 - `./.devin/workflows/` — repeatable procedures (commit, session start, audit)
 
 ## What does NOT belong in this repo

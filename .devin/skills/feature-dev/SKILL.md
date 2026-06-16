@@ -1,4 +1,5 @@
 ---
+name: feature-dev
 description: Triggered when adding new features or functionality to the project
 ---
 
@@ -23,4 +24,3 @@ description: Triggered when adding new features or functionality to the project
 - Update `CONTEXT.md` — move feature from "Pending" to "Working"
 - Add decision rationale to `vault/decisions/` if a new design choice was made
 - Run `/commit` workflow before pushing
-

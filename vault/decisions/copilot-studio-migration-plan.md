@@ -1,6 +1,6 @@
 # Copilot Studio Migration Plan
 
-Migrate MES Local from a local Streamlit app to a Microsoft Teams Copilot Studio agent backed by Azure Functions and Azure AI Search.
+Migrate GMES Agent from a local Streamlit app to a Microsoft Teams Copilot Studio agent backed by Azure Functions and Azure AI Search.
 
 ---
 
@@ -59,7 +59,7 @@ Logic mirrors `app.py`: rewrite_query → embed → AI Search → build_messages
 
 Deploy:
 ```
-func azure functionapp publish mes-local-api
+func azure functionapp publish gmes-agent-api
 ```
 
 ---

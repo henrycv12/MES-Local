@@ -11,5 +11,5 @@ Run this at the start of every work session.
 5. Check `chroma_db/` exists — if not, remind user to run `python ingest_excel.py` first
 6. Check `.env` exists with `AZURE_OPENAI_API_KEY`, `AZURE_OPENAI_ENDPOINT`, `AZURE_OPENAI_EMBED_DEPLOYMENT` — if missing, warn that embedding will fall back to Ollama (slow)
 7. Ask the user: what are we working on today?
-8. Load the relevant skill from `.devin/skills/` based on the task type
+8. Load the relevant skill based on the task type — available skills: `@feature-dev`, `@debugging`, `@deployment`, `@config-change`
 

@@ -1,8 +1,8 @@
-# MES Local — Maintenance Agent
+# GMES Agent — Maintenance Agent
 
 **LG Electronics — TN Production Engineering Team**
 
-A fully local, offline AI assistant that answers maintenance questions from 7 years of GMES work order history. No cloud, no subscription, no data leaves the building.
+A fully local AI assistant that answers maintenance questions from 7 years of GMES work order history using Azure OpenAI + ChromaDB.
 
 ## How it works
 

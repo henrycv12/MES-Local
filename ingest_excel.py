@@ -8,7 +8,10 @@ load_dotenv()
 
 EXCEL_FOLDER = "."           # scans all .xlsx files in this folder
 CHROMA_DIR = "./chroma_db"
+WO_COLLECTION = "work_orders"
 EMBED_MODEL_OLLAMA = "nomic-embed-text"
+EMBED_BATCH = 500
+BATCH_SIZE = 500
 
 # --- Auto-detect embedding provider from .env ---
 AZURE_KEY      = os.getenv("AZURE_OPENAI_API_KEY", "")
@@ -74,9 +77,13 @@ def row_to_text(row):
 
 
 def ingest_excel():
-    excel_files = glob.glob(f"{EXCEL_FOLDER}/*.xlsx") + glob.glob(f"{EXCEL_FOLDER}/*.xls")
+    excel_files = (
+        glob.glob(f"{EXCEL_FOLDER}/*.xlsx") +
+        glob.glob(f"{EXCEL_FOLDER}/*.xls") +
+        glob.glob(f"{EXCEL_FOLDER}/*.csv")
+    )
     if not excel_files:
-        print("No Excel files found in folder.")
+        print("No Excel/CSV files found in folder.")
         return
 
     all_records = []
@@ -84,7 +91,10 @@ def ingest_excel():
         filename = filepath.split("\\")[-1].split("/")[-1]
         print(f"Reading: {filepath}")
         try:
-            df = pd.read_excel(filepath, dtype=str)
+            if filepath.endswith(".csv"):
+                df = pd.read_csv(filepath, dtype=str, encoding="utf-8-sig")
+            else:
+                df = pd.read_excel(filepath, dtype=str)
         except Exception as e:
             print(f"  ⚠️  Could not read {filepath}: {e}")
             continue
@@ -124,7 +134,6 @@ def ingest_excel():
 
     # --- Connect to existing ChromaDB ---
     client = chromadb.PersistentClient(path=CHROMA_DIR)
-    WO_COLLECTION = "work_orders"
 
     try:
         collection = client.get_collection(WO_COLLECTION)
@@ -163,7 +172,6 @@ def ingest_excel():
         "maint_type": r["maint_type"],
     } for r in new_records]
 
-    EMBED_BATCH = 500
     embeddings = []
     total_texts = len(texts)
     provider = "Azure OpenAI" if USE_AZURE else "Ollama (local CPU)"
@@ -184,7 +192,6 @@ def ingest_excel():
             embeddings.extend(resp.embeddings)
         print(f"  Embedded {end}/{total_texts}...")
 
-    BATCH_SIZE = 500
     total = len(texts)
     for start in range(0, total, BATCH_SIZE):
         end = min(start + BATCH_SIZE, total)

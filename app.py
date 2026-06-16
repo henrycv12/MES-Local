@@ -38,12 +38,12 @@ RECENCY_KEYWORDS = {
 }
 
 st.set_page_config(
-    page_title="MES Local — Maintenance Agent",
+    page_title="GMES Agent — Maintenance Agent",
     page_icon="�",
     layout="wide",
 )
 
-st.title("� MES Local — Maintenance Agent")
+st.title("� GMES Agent — Maintenance Agent")
 st.caption("AI-powered troubleshooting from your work order history")
 st.divider()
 
@@ -91,7 +91,7 @@ def embed_query(query):
         resp = _azure_client.embeddings.create(model=AZURE_DEPLOY, input=[query])
         return resp.data[0].embedding
     else:
-        return ollama.embeddings(model=EMBED_MODEL, prompt=query)["embedding"]
+        return ollama.embed(model=EMBED_MODEL, input=[query]).embeddings[0]
 
 
 def retrieve_context(query, collection, top_k=TOP_K):

@@ -36,9 +36,9 @@ Data Layer       → Azure SQL Database
 
 ---
 
-## What We Built Instead (MES Local — current)
+## What We Built Instead (GMES Agent — current)
 
-| Original | MES Local equivalent | Status |
+| Original | GMES Agent equivalent | Status |
 |---|---|---|
 | Microsoft Teams / Copilot Studio | Streamlit chat UI (local) | 🟡 Partial |
 | Azure AI Search (vector) | ChromaDB (local persistent vector DB) | ✅ Done |
@@ -87,7 +87,7 @@ Data Layer       → Azure SQL Database
 
 ---
 
-## Gap Analysis — What MES Local Still Needs
+## Gap Analysis — What GMES Agent Still Needs
 
 ### ✅ Completed
 - [x] **Azure OpenAI embeddings** (`text-embedding-3-small` via `embed-model`) — Jun 15 2026
