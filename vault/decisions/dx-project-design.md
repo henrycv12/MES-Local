@@ -91,7 +91,7 @@ Data Layer       → Azure SQL Database
 
 | NO | Team | Week | Project Title | Current Status | Target | Planned Progress | Actual Progress | Flag | Note/Issue |
 |---|---|---|---|---|---|---|---|---|---|
-| 6 | PE | W25 | Development of an AI-based Work Order Management and Analytics System | Development | Jun 26 | 80% | 70% | ● | Core RAG system complete (Azure OpenAI, AI Search, Copilot Studio, multi-turn history, citations). Pending: recurring failure analytics, automated nightly sync, Teams integration, output actions (Create PM Task, Export Summary). |
+| 6 | PE | W25 | Development of an AI-based Work Order Management and Analytics System | Development | Jun 26 | 80% | 70% | ● | Core RAG system complete (Azure OpenAI, AI Search, Copilot Studio, multi-turn history, citations). Pending: recurring failure analytics, automated nightly sync, Teams integration, output actions (Create PM Task, Export Summary). **Note**: Continued development requires paid subscriptions for: (1) Azure Logic Apps or Azure Functions Timer Trigger for automated nightly GMES sync; (2) Power Automate Premium for advanced output actions (Create PM Task, Export Summary); (3) Microsoft Teams Premium for advanced bot features. Current Azure OpenAI, AI Search, Table Storage, and basic Copilot Studio are already provisioned. |
 
 ## Gap Analysis — What GMES Agent Still Needs
 
