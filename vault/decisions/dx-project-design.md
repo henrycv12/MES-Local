@@ -40,11 +40,16 @@ Data Layer       → Azure SQL Database
 
 | Original | GMES Agent equivalent | Status |
 |---|---|---|
-| Microsoft Teams / Copilot Studio | Streamlit chat UI (local) | 🟡 Partial |
-| Azure AI Search (vector) | ChromaDB (local persistent vector DB) | ✅ Done |
-| Azure OpenAI GPT-4 (reasoning) | Azure OpenAI `gpt-4o` | ✅ Done |
-| Azure OpenAI embeddings | Azure OpenAI `text-embedding-3-small` | ✅ Done |
-| Azure SQL Database | GMES `.xlsx`/`.csv` export (local) | 🟡 Partial |
+| Microsoft Teams | Copilot Studio (subscription required) | 🟡 Partial — requires Teams Premium |
+| Copilot Studio agent | Azure Functions `/api/query` + Power Automate connector | ✅ Done |
+| Azure AI Search (vector) | Azure AI Search (`work-orders` index) + ChromaDB fallback | ✅ Done |
+| Azure OpenAI GPT-4 (reasoning) | Azure OpenAI `gpt-4o` (with Ollama `llama3.2:1b` local fallback) | ✅ Done |
+| Azure OpenAI embeddings | Azure OpenAI `text-embedding-3-small` (with Ollama `nomic-embed-text` fallback) | ✅ Done |
+| Azure SQL Database | GMES `.xlsx`/`.csv` export → ChromaDB + Azure AI Search | 🟡 Partial |
+| Multi-turn conversation history | Azure Table Storage (`convhistory` table) + Streamlit session state | ✅ Done |
+| Cited work order output | Inline citations in every answer (WO#, date, technician, equipment) | ✅ Done |
+| Query disambiguation | GPT-4o query rewriter — resolves pronouns and implicit equipment references | ✅ Done |
+| Recency-aware retrieval | Keyword detection + date re-ranking for "recent / latest / last" queries | ✅ Done |
 | Nightly automated sync | Manual export from GMES | ❌ Pending |
 
 ---
@@ -91,7 +96,7 @@ Data Layer       → Azure SQL Database
 
 | NO | Team | Week | Project Title | Current Status | Target | Planned Progress | Actual Progress | Flag | Note/Issue |
 |---|---|---|---|---|---|---|---|---|---|
-| 6 | PE | W25 | Development of an AI-based Work Order Management and Analytics System | Development | Jun 26 | 80% | 70% | ● | Core RAG system complete (Azure OpenAI, AI Search, Copilot Studio, multi-turn history, citations). Pending: recurring failure analytics, automated nightly sync, Teams integration, output actions (Create PM Task, Export Summary). **Note**: Continued development requires paid subscriptions for: (1) Azure Logic Apps or Azure Functions Timer Trigger for automated nightly GMES sync; (2) Power Automate Premium for advanced output actions (Create PM Task, Export Summary); (3) Microsoft Teams Premium for advanced bot features. Current Azure OpenAI, AI Search, Table Storage, and basic Copilot Studio are already provisioned. |
+| 6 | PE | W25 | Development of an AI-based Work Order Management and Analytics System | Testing & Feedback | Jun 26 | 85% | 80% | 🟡 | Core RAG system complete: Azure OpenAI `gpt-4o`, Azure AI Search, Azure Functions `/api/query`, Power Automate custom connector, Azure Table Storage multi-turn history, inline WO citations, query rewriting, recency-aware retrieval — all implemented and committed. PE team actively validating response quality. Pending: recurring failure analytics, automated nightly GMES sync, Teams integration, output actions (Create PM Task, Export Summary). **Note**: Teams integration requires Copilot Studio with Teams Premium subscription (separate from current provisioned resources). Azure Logic Apps Timer Trigger needed for automated nightly sync. |
 
 ## Gap Analysis — What GMES Agent Still Needs
 
@@ -100,14 +105,22 @@ Data Layer       → Azure SQL Database
 - [x] **Azure OpenAI LLM** (`gpt-4o`) — Jun 15 2026
 - [x] **Response time ≤5 sec** — achieved ~2–5 sec with GPT-4o — Jun 15 2026
 - [x] **19,000+ work orders indexed** (1 year of data from GMES) — Jun 15 2026
-- [x] **Multi-turn conversation history** — Copilot Studio agent with full context via Azure Table Storage — Jun 16 2026
-- [x] **Copilot Studio integration** — replaces "local Streamlit only" — Jun 16 2026
+- [x] **Multi-turn conversation history** — full context via Azure Table Storage (`convhistory` table) + Streamlit session state — Jun 16 2026
+- [x] **Azure Functions API** (`/api/query` HTTP POST trigger) — production-ready cloud backend — Jun 16 2026
+- [x] **Power Platform custom connector** — OpenAPI spec + connector JSON for Power Automate integration — Jun 16 2026
+- [x] **Copilot Studio integration** — agent calls `/api/query` via Power Automate — Jun 16 2026
 - [x] **Work order citations** — inline citation block in every answer showing WO number, date, technician, equipment — Jun 16 2026
+- [x] **Query rewriting** — GPT-4o resolves pronouns and implicit equipment references across turns — Jun 16 2026
+- [x] **Recency-aware retrieval** — keyword detection triggers date re-ranking (recent/latest/last) — Jun 16 2026
+- [x] **Adaptive Card responses** — rich card output from Azure Functions for Copilot Studio display — Jun 16 2026
+- [x] **Local Streamlit UI** — full-featured chat interface with WO cards and multi-turn state — Jun 16 2026
+- [x] **Incremental ingestion** — duplicate detection, skips already-indexed WOs on each run — Jun 16 2026
 
-### 🟡 Pending
-- [ ] **Recurring failure analytics** — top-N failures by line/shop/date range (high value per DX KPIs)
-- [ ] **Create PM Task** output action
-- [ ] **Export Summary** — cited records ready to share with team
-- [ ] **Cross-line pattern queries** — current retrieval is semantic, not aggregated
-- [ ] **Automated nightly sync** from GMES (currently manual export)
-- [ ] **Teams integration** (currently local Streamlit only)
+### 🟡 Pending (in priority order)
+- [ ] **Recurring failure analytics** — top-N failures by line/shop/date range; current retrieval is semantic, not aggregated (highest DX KPI value)
+- [ ] **Cross-line pattern queries** — frequency rollups ("which lines had the most X failures in Q1?")
+- [ ] **Create PM Task** output action — one-click handoff to PM checklist (requires Power Automate Premium)
+- [ ] **Export Summary** — cited records + cause ready to share with team (requires Power Automate Premium)
+- [ ] **Automated nightly sync** from GMES — currently manual `.xlsx` export required (requires Azure Logic Apps Timer Trigger or Azure Functions timer)
+- [ ] **Teams integration** — Copilot Studio surfaced inside Microsoft Teams (requires Teams Premium subscription)
+- [ ] **Open Source WO** — direct link back to original GMES record
