@@ -15,13 +15,21 @@
 - **Fix:** `asyncio.WindowsSelectorEventLoopPolicy()` at startup + `stream=False` in all Ollama calls
 - **Status:** ✅ Resolved
 
-## [ACTIVE] Response time ~15–25s
-- **Problem:** `llama3.2:1b` on CPU takes 15–25s per query — KPI target is ≤5s
-- **Workaround:** Use `llama3.2:1b` (not 3b). No GPU acceleration available on current workstation.
-- **Future:** Consider GPU-enabled workstation or quantized model
+## [RESOLVED] Response time ~15–25s
+- **Problem:** `llama3.2:1b` on CPU took 15–25s per query — KPI target is ≤5s
+- **Fix:** Switched to Azure OpenAI `gpt-4o` exclusively; Ollama removed from codebase
+- **Status:** ✅ Resolved — response time now ~2–5s
+
+## [ACTIVE] Azure AI Search storage limit — cannot index full database
+- **Problem:** Azure AI Search free tier is capped at 50MB. Current index uses 11MB with only 10% of the WO database loaded. Full database (~110MB) exceeds the limit.
+- **Options (must stay within Microsoft tenant — external vector DBs not allowed):**
+  - **A — Upgrade to Basic tier**: ~$73/month, 2GB storage. No code changes.
+  - **B — Recency split (free)**: Index only last 12–18 months in Azure AI Search (Copilot Studio path); keep full history in local ChromaDB (Streamlit path).
+- **Workaround:** Do not ingest more than ~40% of the database until resolved.
+- **Status:** ⛔ BLOCKED — architecture decision pending
 
 ## [ACTIVE] Manual GMES export required
 - **Problem:** No automated nightly sync from GMES — engineer must manually export Excel
 - **Workaround:** Export when new WOs need to be added; incremental ingest skips existing records
-- **Future:** Automate export via GMES API if available
+- **Blocker:** Requires HQ GMES API access — not an internal IT decision
 
