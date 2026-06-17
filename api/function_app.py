@@ -206,78 +206,82 @@ def analytics_handler(req: func.HttpRequest) -> func.HttpResponse:
     compare_lines = body.get("compare_lines", [])  # optional: compare specific lines
     time_group = body.get("time_group", None)  # optional: "week", "month", "quarter" for time-based aggregation
 
-    # Build filter for date range
+    # Validate and parse dates up front so bad input returns 400, not 500
+    try:
+        ts_from = int(pd.Timestamp(date_from).timestamp()) if date_from else None
+        ts_to   = int(pd.Timestamp(date_to).timestamp())   if date_to   else None
+    except (ValueError, TypeError) as exc:
+        return func.HttpResponse(f"Invalid date format: {exc}", status_code=400)
+
+    # Build OData filter — escape single quotes in line names to prevent injection
     filters = []
-    if date_from:
-        filters.append(f"date_ts ge {int(pd.Timestamp(date_from).timestamp())}")
-    if date_to:
-        filters.append(f"date_ts le {int(pd.Timestamp(date_to).timestamp())}")
+    if ts_from is not None:
+        filters.append(f"date_ts ge {ts_from}")
+    if ts_to is not None:
+        filters.append(f"date_ts le {ts_to}")
     if compare_lines:
-        line_filter = " or ".join([f"line eq '{line}'" for line in compare_lines])
+        escaped = [line.replace("'", "''") for line in compare_lines]
+        line_filter = " or ".join(f"line eq '{l}'" for l in escaped)
         filters.append(f"({line_filter})")
-    
+
     filter_query = " and ".join(filters) if filters else None
 
-    # Use client-side aggregation (retrieve documents and count)
+    # Normalize group_by to list once, before the search
+    if isinstance(group_by, str):
+        group_by = [group_by]
+
+    # Use client-side aggregation. Azure AI Search hard-caps top at 1000;
+    # page through with skip to collect all matching documents.
     try:
-        # Fetch up to 2000 documents for cross-line pattern queries
-        results = _search_client.search(
-            search_text=filter_text if filter_text else "*",
-            filter=filter_query,
-            top=2000,
-            select=["wo_no", "date", "date_ts", "equipment", "line", "maint_type", "technician", "group"],
-        )
-        
-        # Normalize group_by to array
-        if isinstance(group_by, str):
-            group_by = [group_by]
-        
-        # Aggregate on client side
-        counts = {}
-        for r in results:
-            # Build composite key for multi-field grouping
-            key_parts = []
-            for field in group_by:
-                value = r.get(field, "Unknown")
-                key_parts.append(str(value) if value else "Unknown")
-            key = "|".join(key_parts)
-            
-            # Add time grouping if specified
+        all_results = []
+        skip = 0
+        page_size = 1000
+        while True:
+            page = list(_search_client.search(
+                search_text=filter_text if filter_text else "*",
+                filter=filter_query,
+                top=page_size,
+                skip=skip,
+                select=["wo_no", "date", "date_ts", "equipment", "line", "maint_type", "technician", "group"],
+            ))
+            all_results.extend(page)
+            if len(page) < page_size:
+                break
+            skip += page_size
+
+        # Aggregate — store field values as a tuple (no separator ambiguity)
+        counts: dict[tuple, int] = {}
+        for r in all_results:
+            key_parts = tuple(str(r.get(f) or "Unknown") for f in group_by)
+
             if time_group:
                 date_ts = r.get("date_ts", 0)
                 if date_ts:
-                    dt = pd.to_datetime(date_ts, unit='s')
+                    dt = pd.to_datetime(date_ts, unit="s")
                     if time_group == "week":
-                        time_key = dt.strftime("%Y-W%W")
+                        tkey = dt.strftime("%Y-W%W")
                     elif time_group == "month":
-                        time_key = dt.strftime("%Y-%m")
+                        tkey = dt.strftime("%Y-%m")
                     elif time_group == "quarter":
-                        time_key = f"{dt.year}-Q{(dt.month-1)//3 + 1}"
+                        tkey = f"{dt.year}-Q{(dt.month - 1) // 3 + 1}"
                     else:
-                        time_key = dt.strftime("%Y-%m-%d")
-                    key = f"{time_key}|{key}"
-            
-            counts[key] = counts.get(key, 0) + 1
-        
-        # Convert to list and sort by count descending
-        facet_results = [
-            {"value": k, "count": v}
-            for k, v in sorted(counts.items(), key=lambda x: x[1], reverse=True)
-        ][:top_n]
-        
-        # Parse composite keys for multi-field results
+                        tkey = dt.strftime("%Y-%m-%d")
+                    key_parts = (tkey,) + key_parts
+
+            counts[key_parts] = counts.get(key_parts, 0) + 1
+
+        top_keys = sorted(counts.items(), key=lambda x: x[1], reverse=True)[:top_n]
+
         parsed_results = []
-        for item in facet_results:
-            parts = item["value"].split("|")
+        for key_parts, count in top_keys:
+            result: dict = {}
+            offset = 0
             if time_group:
-                result = {"time_period": parts[0]}
-                for i, field in enumerate(group_by):
-                    result[field] = parts[i + 1] if i + 1 < len(parts) else "Unknown"
-            else:
-                result = {}
-                for i, field in enumerate(group_by):
-                    result[field] = parts[i] if i < len(parts) else "Unknown"
-            result["count"] = item["count"]
+                result["time_period"] = key_parts[0]
+                offset = 1
+            for i, field in enumerate(group_by):
+                result[field] = key_parts[offset + i]
+            result["count"] = count
             parsed_results.append(result)
         
         return func.HttpResponse(
